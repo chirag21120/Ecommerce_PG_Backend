@@ -1,34 +1,54 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
-
-const paymentMethods = {
-  values: ['card', 'cash'],
-  message: 'enum validator failed for payment Methods'
-}
-const orderSchema = new Schema(
-  {
-    items: { type: [Schema.Types.Mixed], required: true },
-    totalAmount: { type: Number },
-    totalItems: { type: Number },
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    paymentMethod: { type: String, required: true, enum: paymentMethods },
-    paymentStatus: { type: String, default: 'pending' },
-    status: { type: String, default: 'pending' },
-    selectedAddress: { type: Schema.Types.Mixed, required: true },
-  },
-  { timestamps: true }
-);
-
-const virtual = orderSchema.virtual('id');
-virtual.get(function () {
-  return this._id;
+const { DataTypes } = require('sequelize');
+const sequelize = require('../sequelizeConnection'); // Import your PostgreSQL connection
+const User = require('./User');
+// Define the Order model
+const Order = sequelize.define('Order', {
+    items: {
+        type: DataTypes.ARRAY(DataTypes.JSONB), // Store items as an array of JSON objects
+        allowNull: false,
+    },
+    totalAmount: {
+        type: DataTypes.FLOAT,
+    },
+    totalItems: {
+        type: DataTypes.INTEGER,
+    },
+    // Reference the User model
+    user_id: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: 'users', // Assuming your User model is named 'User'
+            key: 'id', // Assuming 'id' is the primary key of the User model
+        },
+        allowNull: false,
+    },
+    paymentMethod: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            isIn: [['card', 'cash']], // Enforce enum validation
+        },
+    },
+    paymentStatus: {
+        type: DataTypes.STRING,
+        defaultValue: 'pending',
+    },
+    status: {
+        type: DataTypes.STRING,
+        defaultValue: 'pending',
+    },
+    selectedAddress: {
+        type: DataTypes.JSONB, // Store the address as JSONB
+        allowNull: false,
+    },
+}, {
+    timestamps: true,
+    tableName: 'orders', // Specify the table name
+    underscored: true, // Use underscores for column names
 });
-orderSchema.set('toJSON', {
-  virtuals: true,
-  versionKey: false,
-  transform: function (doc, ret) {
-    delete ret._id;
-  },
-});
 
-exports.Order = mongoose.model('Order', orderSchema);
+// Define the associations between models
+Order.belongsTo(User, { foreignKey: 'user_id' });
+
+
+module.exports = Order;

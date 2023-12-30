@@ -1,8 +1,8 @@
-const { Brand } = require('../model/Brand');
-
+const Brand  = require('../model/Brand');
+const sequelize = require("../sequelizeConnection")
 exports.fetchBrands = async (req, res) => {
   try {
-    const brands = await Brand.find({}).exec();
+    const brands = await sequelize.models.Brand.findAll();
     res.status(200).json(brands);
   } catch (err) {
     res.status(400).json(err);
@@ -10,9 +10,9 @@ exports.fetchBrands = async (req, res) => {
 };
 
 exports.createBrand = async (req, res) => {
-  const brand = new Brand(req.body);
   try {
-    const doc = await brand.save();
+    const {label,value} = req.body;
+    const doc = await Brand.create({label, value});
     res.status(201).json(doc);
   } catch (err) {
     res.status(400).json(err);

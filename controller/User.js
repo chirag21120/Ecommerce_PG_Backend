@@ -1,10 +1,11 @@
-const { Category } = require('../model/Category');
-const { User } = require('../model/User');
+const  User  = require('../model/User');
 
 exports.fetchUserById = async (req, res) => {
   const { id } = req.user;
   try {
-    const user = await User.findById(id,"username email id addresses role");
+    const user = await User.findByPk(id, {
+      attributes: ['username', 'email', 'id', 'addresses', 'role'],
+    });
     res.status(200).json(user);
   } catch (err) {
     res.status(400).json(err);
@@ -13,10 +14,16 @@ exports.fetchUserById = async (req, res) => {
 
 
 exports.updateUser = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.user;
   try {
-    const user = await User.findByIdAndUpdate(id, req.body, { new: true });
-    res.status(200).json(user);
+    const [updatedRowCount, [updatedUser]] = await User.update(req.body, {
+      returning: true,
+      where: { id },
+    });
+    if (updatedRowCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.status(200).json(updatedUser);
   } catch (err) {
     res.status(400).json(err);
   }

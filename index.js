@@ -8,7 +8,7 @@ const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const cookieParser = require('cookie-parser')
 const jwt = require("jsonwebtoken");
-const connectToMongo = require("./db");
+// const connectToMongo = require("./db");
 const ProductsRouter = require("./routes/Product");
 const categoryRouter = require("./routes/Category");
 const brandsRouter = require("./routes/Brands");
@@ -17,15 +17,18 @@ const authRouter = require("./routes/Auth");
 const cartRouter = require("./routes/Cart");
 const orderReducer = require("./routes/Order");
 const cors = require("cors");
-const { User } = require("./model/User");
+const  User  = require("./model/User");
 const { isAuth, sanitizeUser, cookieExtractor } = require("./services/common");
 const dotenv = require("dotenv");
 const path = require('path');
 const { Order } = require("./model/Order");
+const sequelize = require("./sequelizeConnection");
 
 dotenv.config();
-connectToMongo();
-
+// connectToMongo();
+ const conn = async()=> {await sequelize.authenticate();
+console.log('connected');}
+conn()
 const port = process.env.PORT;
 const secret_key = process.env.JWT_SECRET;
 const stripe_key = process.env.STRIPE_KEY
@@ -86,7 +89,8 @@ server.use(
   })
 );
 server.use(express.json()); //to parse req.body
-server.use("/products", isAuth(), ProductsRouter.router);
+// server.use("/products", isAuth(), ProductsRouter.router);
+server.use("/products", ProductsRouter.router);
 server.use("/category", isAuth(), categoryRouter.router);
 server.use("/brands", isAuth(), brandsRouter.router);
 server.use("/users",isAuth(), userRouter.router);
@@ -104,7 +108,7 @@ passport.use(
   "local",
   new LocalStrategy({usernameField:'email'},async function (email, password, done) {
     try {
-      const user = await User.findOne({ email: email });
+      const user = await User.findOne({where:{ email: email }});
       if (!user) {
         done(null, false, { message: "invalid credentials" });
       } else
@@ -134,7 +138,7 @@ passport.use(
   "jwt",
   new JwtStrategy(opts, async function (jwt_payload, done) {
     try {
-      const user = await User.findById(jwt_payload.id );
+      const user = await User.findByPk(jwt_payload.id );
       if (user) {
         return done(null, sanitizeUser(user)); //this calls serializer
       } else {
@@ -191,3 +195,27 @@ server.post("/create-payment-intent", async (req, res) => {
 server.listen(port, () => {
   console.log(`listnening at http://localhost:${port}`);
 });
+
+sequelize.sync()
+  .then(() => {
+    console.log('Database synchronized');
+  })
+  .catch((error) => {
+    console.error('Error synchronizing database:', error);
+  });
+
+// process.on('exit', () => {
+//   sequelize.close()
+//       .then(() => {
+//           console.log('Database connection has been closed.');
+//       })
+//       .catch((err) => {
+//           console.error('Error closing the database connection:', err);
+//       });
+// });
+// These steps should help you ensure a stable and persistent database connection in your application. If you continue to face issues, please provide more specific details about the error messages or logs you are encountering so that I can offer more targeted assistance.
+
+
+
+
+

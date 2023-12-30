@@ -1,21 +1,22 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const { DataTypes } = require('sequelize');
+const sequelize = require('../sequelizeConnection'); // Import your PostgreSQL connection
 
-const brandSchema = new Schema({
-  label: { type: String, required: true, unique: true },
-  value: { type: String, required: true, unique: true },
+// Define the Brand model
+const Brand = sequelize.define('Brand', {
+    label: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
+    value: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
+}, {
+    timestamps: false,
+    tableName: 'brands', // Specify the table name
+    underscored: true, // Use underscores for column names
 });
 
-const virtual = brandSchema.virtual('id');
-virtual.get(function () {
-  return this._id;
-});
-brandSchema.set('toJSON', {
-  virtuals: true,
-  versionKey: false,
-  transform: function (doc, ret) {
-    delete ret._id;
-  },
-});
-
-exports.Brand = mongoose.model('Brand', brandSchema);
+module.exports = Brand;
