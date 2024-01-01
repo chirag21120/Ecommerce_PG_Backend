@@ -12,6 +12,7 @@ const Cart = sequelize.define('Cart', {
     // Reference the Product and User models
     product_id: {
         type: DataTypes.INTEGER,
+        allowNull: false,
         references: {
             model: 'products', // Assuming your Product model is named 'Product'
             key: 'id', // Assuming 'id' is the primary key of the Product model
@@ -19,6 +20,7 @@ const Cart = sequelize.define('Cart', {
     },
     user_id: {
         type: DataTypes.INTEGER,
+        allowNull: false,
         references: {
             model: 'users', // Assuming your User model is named 'User'
             key: 'id', // Assuming 'id' is the primary key of the User model

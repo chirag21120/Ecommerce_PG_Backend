@@ -108,12 +108,6 @@ server.use("/auth", authRouter.router);
 server.use("/cart", isAuth(), cartRouter.router);
 server.use("/orders", isAuth(), orderReducer.router);
 
-// server.use("/category", categoryRouter.router);
-// server.use("/brands", brandsRouter.router);
-// server.use("/users", userRouter.router);
-// server.use("/auth", authRouter.router);
-// server.use("/cart", cartRouter.router);
-// server.use("/orders", orderReducer.router);
 
 //if no path is matched
 server.get('*',(req,res)=>
@@ -156,7 +150,6 @@ passport.use(
   new JwtStrategy(opts, async function (jwt_payload, done) {
     try {
       const user = await User.findByPk(jwt_payload.id );
-      console.log("hi");
       if (user) {
         return done(null, sanitizeUser(user)); //this calls serializer
       } else {
