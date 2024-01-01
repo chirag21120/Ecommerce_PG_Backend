@@ -1,6 +1,7 @@
 const  Order  = require("../model/Order");
 const Product  = require("../model/Product");
 const  User  = require("../model/User");
+const {Op, literal} = require("sequelize")
 const sequelize = require("../sequelizeConnection");
 const { sendMail, invoiceTemplate } = require("../services/common");
 // const { sendMail, invoiceTemplate } = require("../services/common");
@@ -68,17 +69,11 @@ exports.updateOrder = async (req, res) => {
 
 exports.fetchAllOrders = async (req, res) => {
   let query = {
-    where: { deleted: { [sequelize.Op.ne]: true } },
-    include: [{ model: Product, as: 'items', include: 'Product' }]
   };
-  let totalOrdersQuery = { where: { deleted: { [sequelize.Op.ne]: true } } };
 
   if (req.query._sort && req.query._order) {
     query.order = [[req.query._sort, req.query._order]];
   }
-
-  const totalDocs = await Order.count(totalOrdersQuery);
-
   if (req.query._page && req.query._limit) {
     const pageSize = req.query._limit;
     const page = req.query._page;
@@ -87,10 +82,25 @@ exports.fetchAllOrders = async (req, res) => {
   }
 
   try {
-    const docs = await Order.findAll(query);
-    res.set('X-Total-Count', totalDocs);
-    res.status(200).json(docs);
+    const orders = await Order.findAndCountAll(query);
+    const ordersWithProducts = await Promise.all(
+      orders.rows.map(async order => {
+        const productIds = order.items.map(item => item.productId);
+        const products = await Product.findAll({
+          where: {
+            id: productIds,
+          },
+        });
+        return {
+          ...order.toJSON(),
+          products,
+        };
+      })
+      );
+    res.set('X-Total-Count', orders.count);
+    res.status(200).json(ordersWithProducts);
   } catch (err) {
+    console.log(err);
     res.status(400).json(err);
   }
 };

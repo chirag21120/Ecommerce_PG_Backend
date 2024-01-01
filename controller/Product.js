@@ -1,8 +1,8 @@
-const {Product} = require("../model/Product")
-const {sequelize} = require('../sequelizeConnection');
+const Product = require("../model/Product")
+const {Op,literal} = require("sequelize")
 
 exports.createProduct = async (req, res) => {
-  const { id } = req.user;
+  const  id  = req.user;
   try {
       const product = await Product.create({ ...req.body, admin: id });
       res.status(201).json(product);
@@ -44,6 +44,7 @@ exports.fetchAllProduct = async (req, res) => {
       res.set('X-Total-Count', count);
       res.status(200).json(rows);
   } catch (err) {
+    console.log(err);
       res.status(400).json(err);
   }
 };
@@ -78,9 +79,9 @@ exports.updateProduct = async (req, res) => {
 
 
 exports.fetchAdminProducts = async (req, res) => {
-  const { id } = req.user;
+  const  {id}  = req.user;
   const query = {
-      where: { admin: id },
+      where: { admin:`${id}`},
   };
 
   if (req.query.category) {

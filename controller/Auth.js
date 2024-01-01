@@ -62,10 +62,9 @@ exports.createUser = async (req, res) => {
 
 exports.loginUser = async (req, res) => {
   const user = req.user;
-  console.log(user);
   const token = jwt.sign(user, secret_key);
   const expirationTime = Date.now() + 3600000;
-
+  
   res
       .cookie('jwt', token, {
           expires: new Date(expirationTime),

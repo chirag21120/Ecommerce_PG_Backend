@@ -2,6 +2,7 @@ const  User  = require('../model/User');
 
 exports.fetchUserById = async (req, res) => {
   const { id } = req.user;
+  // const id = 5;
   try {
     const user = await User.findByPk(id, {
       attributes: ['username', 'email', 'id', 'addresses', 'role'],

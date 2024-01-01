@@ -2,6 +2,7 @@ const Cart  = require('../model/Cart');
 
 exports.fetchCartByUser = async (req, res) => {
   const { id } = req.user;
+  // const id = 5;
   try {
     const cartItems = await Cart.findAll({ 
       where: { user_id: id },

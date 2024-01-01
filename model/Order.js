@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../sequelizeConnection'); // Import your PostgreSQL connection
 const User = require('./User');
+const Product = require('./Product')
 // Define the Order model
 const Order = sequelize.define('Order', {
     items: {
@@ -49,6 +50,7 @@ const Order = sequelize.define('Order', {
 
 // Define the associations between models
 Order.belongsTo(User, { foreignKey: 'user_id' });
+Order.hasMany(Product, { foreignKey: 'id', sourceKey: 'items', as: 'products' });
 
 
 module.exports = Order;

@@ -8,7 +8,6 @@ const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const cookieParser = require('cookie-parser')
 const jwt = require("jsonwebtoken");
-// const connectToMongo = require("./db");
 const ProductsRouter = require("./routes/Product");
 const categoryRouter = require("./routes/Category");
 const brandsRouter = require("./routes/Brands");
@@ -72,7 +71,13 @@ opts.jwtFromRequest = cookieExtractor;
 opts.secretOrKey = secret_key;
 
 //Middlewares
-server.use(express.static(path.resolve(__dirname,'build')))
+// server.use(express.static(path.resolve(__dirname,'build')))
+server.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*'); // or replace '*' with your specific frontend origin
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 server.use(cookieParser())
 server.use(
   session({
@@ -80,23 +85,35 @@ server.use(
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
     // store: new SQLiteStore({ db: "sessions.db", dir: "./var/db" }),
+    cookie:{
+      sameSite:'none',
+      secure: true
+    }
   })
 );
 server.use(passport.authenticate("session"));
 server.use(
   cors({
     exposedHeaders: ["X-Total-Count"],
+    origin: 'http://localhost:3000', 
+    credentials: true,
   })
 );
 server.use(express.json()); //to parse req.body
-// server.use("/products", isAuth(), ProductsRouter.router);
-server.use("/products", ProductsRouter.router);
+server.use("/products",isAuth(), ProductsRouter.router);
 server.use("/category", isAuth(), categoryRouter.router);
 server.use("/brands", isAuth(), brandsRouter.router);
 server.use("/users",isAuth(), userRouter.router);
 server.use("/auth", authRouter.router);
 server.use("/cart", isAuth(), cartRouter.router);
 server.use("/orders", isAuth(), orderReducer.router);
+
+// server.use("/category", categoryRouter.router);
+// server.use("/brands", brandsRouter.router);
+// server.use("/users", userRouter.router);
+// server.use("/auth", authRouter.router);
+// server.use("/cart", cartRouter.router);
+// server.use("/orders", orderReducer.router);
 
 //if no path is matched
 server.get('*',(req,res)=>
@@ -139,6 +156,7 @@ passport.use(
   new JwtStrategy(opts, async function (jwt_payload, done) {
     try {
       const user = await User.findByPk(jwt_payload.id );
+      console.log("hi");
       if (user) {
         return done(null, sanitizeUser(user)); //this calls serializer
       } else {
@@ -203,18 +221,6 @@ sequelize.sync()
   .catch((error) => {
     console.error('Error synchronizing database:', error);
   });
-
-// process.on('exit', () => {
-//   sequelize.close()
-//       .then(() => {
-//           console.log('Database connection has been closed.');
-//       })
-//       .catch((err) => {
-//           console.error('Error closing the database connection:', err);
-//       });
-// });
-// These steps should help you ensure a stable and persistent database connection in your application. If you continue to face issues, please provide more specific details about the error messages or logs you are encountering so that I can offer more targeted assistance.
-
 
 
 
