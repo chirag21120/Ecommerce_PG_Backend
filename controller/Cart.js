@@ -42,7 +42,7 @@ exports.updateCart = async (req, res) => {
   const { id } = req.params;
   try {
     await Cart.update(req.body, { where: { product_id: id, user_id: req.user.id } });
-    const updatedCart = await Cart.findOne({ where: { product_id: id, user_id: req.user.id } });
+    const updatedCart = await Cart.findOne({ where: { product_id: id, user_id: req.user.id },include:'Product' });
     res.status(200).json(updatedCart);
   } catch (err) {
     res.status(400).json(err);
