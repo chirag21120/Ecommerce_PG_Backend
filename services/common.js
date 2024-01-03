@@ -29,12 +29,11 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-exports.sendMail = async function ({ to, subject, text, html }) {
+exports.sendMail = async function ({ to, subject, html }) {
   const info = await transporter.sendMail({
     from: '"Ecommerce" <121forchats@gmail.com>', // sender address
     to, // list of receivers
     subject, // Subject line
-    text, // plain text body
     html, // html body
   });
   return info;
@@ -230,10 +229,10 @@ exports.invoiceTemplate = function (order) {
                               <strong>${order.id}</strong>
                             </td>
                           </tr>
-                          ${order.items.map(item=>
+                          ${order.itemDetails.map(item=>
                            `<tr>
-                            <td align="left" width="60%" style="padding: 6px 12px;font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">${item.product.title}</td>
-                            <td align="left" width="20%" style="padding: 6px 12px;font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">$${Math.round(item.product.price*(1-item.product.discountPercentage/100))}</td>
+                            <td align="left" width="60%" style="padding: 6px 12px;font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">${item.Product.title}</td>
+                            <td align="left" width="20%" style="padding: 6px 12px;font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">$${item.Product.discountedPrice}</td>
                             <td align="left" width="20%" style="padding: 6px 12px;font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">${item.quantity}</td>
                           </tr>`
                             )}
