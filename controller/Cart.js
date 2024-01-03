@@ -2,7 +2,6 @@ const Cart  = require('../model/Cart');
 
 exports.fetchCartByUser = async (req, res) => {
   const { id } = req.user;
-  // const id = 5;
   try {
     const cartItems = await Cart.findAll({ 
       where: { user_id: id },
@@ -45,7 +44,14 @@ exports.updateCart = async (req, res) => {
     const updatedCart = await Cart.findOne({ where: { product_id: id, user_id: req.user.id }, include: 'Product' });
     res.status(200).json(updatedCart);
   } catch (err) {
-    console.log(err);
     res.status(400).json(err);
   }
 };
+
+exports.resetCart = async (req,res)=>{
+  try{
+    const response = await Cart.destroy({where:{user_id : req.user.id}});
+    res.status(200).json(response);
+  }catch(err){
+    res.status(400).json(err);
+  }}
